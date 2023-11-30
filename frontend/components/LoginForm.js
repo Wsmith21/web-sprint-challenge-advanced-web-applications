@@ -5,26 +5,28 @@ const initialFormValues = {
   username: '',
   password: '',
 }
-export default function LoginForm(props) {
+export default function LoginForm({login}) {
   const [values, setValues] = useState(initialFormValues)
-  // ✨ where are my props? Destructure them here
+  const { username, password } = values;
 
-  const onChange = evt => {
-    const { id, value } = evt.target
-    setValues({ ...values, [id]: value })
-  }
+  const onChange = (evt) => {
+    const { id, value } = evt.target;
+    setValues({ ...values, [id]: value });
+  };
 
-  const onSubmit = evt => {
-    evt.preventDefault()
-    // ✨ implement
-  }
+  const onSubmit = (evt) => {
+    evt.preventDefault();
+    if (typeof login === 'function') {
+      login({ username: values.username, password: values.password });
+    } else {
+      console.error('login is not a function');
+    }
+  };
 
   const isDisabled = () => {
-    // ✨ implement
-    // Trimmed username must be >= 3, and
-    // trimmed password must be >= 8 for
-    // the button to become enabled
-  }
+    return !(username.trim().length >= 3 && password.trim().length >= 8);
+  };
+
 
   return (
     <form id="loginForm" onSubmit={onSubmit}>
