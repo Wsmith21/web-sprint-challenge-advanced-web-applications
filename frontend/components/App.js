@@ -91,7 +91,9 @@ export default function App() {
     }
   };
 
-  const postArticle = async (articleData) => {
+  const postArticle = async (article) => {
+    setMessage('');
+    setSpinnerOn(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -107,7 +109,7 @@ export default function App() {
           'Content-Type': 'application/json',
           Authorization: token,
         },
-        body: JSON.stringify(articleData),
+        body: JSON.stringify(article),
       });
   
       if (response.ok) {
@@ -126,6 +128,8 @@ export default function App() {
       }
     } catch (error) {
       setMessage('An error occurred while posting the article');
+    } finally {
+      setSpinnerOn(false); // Turn off spinner
     }
   };
   
@@ -152,10 +156,14 @@ export default function App() {
         },
       });
   
-      const data = response.data;
-      setArticles(data.articles);
-      setMessage(data.message);
+      const updatedArticle = response.data; // Assuming the response contains the updated article data
+  
+      // Update the state with the updated article
+      setCurrentArticleId(null); // Clear current article ID
+      setSuccessMessage('Article updated successfully'); // Display success message
+      setCurrentArticle(updatedArticle); // Set the updated article in the state
     } catch (error) {
+      console.error('Error updating article:', error);
       setMessage('An error occurred while updating the article');
     } finally {
       setSpinnerOn(false); // Turn off spinner

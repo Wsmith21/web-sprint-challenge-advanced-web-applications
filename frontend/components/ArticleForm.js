@@ -14,6 +14,7 @@ export default function ArticleForm({
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
+    console.log("Current Article:", currentArticle);
     if (currentArticle) {
       setValues({
         title: currentArticle.title || '',
@@ -36,25 +37,28 @@ export default function ArticleForm({
       if (currentArticle) {
         // Existing article - perform update
         await updateArticle({ article_id: currentArticle.article_id, article: values });
-        // Handle update logic, if needed
+        // Reset form after successful submission
+        setValues(initialFormValues);
+        // Clear currentArticle ID after submission
+        setCurrentArticleId(null);
+        // Display success message
+        setSuccessMessage('Article updated successfully');
       } else {
         // New article - perform creation
         const newArticle = await postArticle(values);
         // Update the articles state with the newly created article
         setArticles([...articles, newArticle]);
+        // Reset form after successful submission
+        setValues(initialFormValues);
+        // Display success message
+        setSuccessMessage('Article posted successfully');
       }
-
-      // Reset form after successful submission
-      setValues(initialFormValues);
-      // Clear currentArticle ID after submission
-      setCurrentArticleId(null);
-      // Display success message
-      setSuccessMessage('Article posted successfully');
     } catch (error) {
       console.error('Error while posting/updating article:', error);
       // Handle error
     }
   };
+  
   
   const isDisabled = () => {
     return !(values.title.trim().length > 0 && values.text.trim().length > 0 && values.topic.trim().length > 0);

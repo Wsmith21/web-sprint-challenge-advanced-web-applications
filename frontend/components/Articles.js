@@ -20,6 +20,10 @@ export default function Articles({
   if (!localStorage.getItem('token')) {
     return <Navigate to="/" />;
   }
+
+  const handleEditArticle = (articleId) => {
+    setCurrentArticleId(articleId); // Set the current article ID for editing
+  };
   
 
   return (
@@ -36,7 +40,7 @@ export default function Articles({
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button onClick={() => setCurrentArticleId(art.article_id)}>Edit</button>
+                  <button onClick={() => handleEditArticle(art)}>Edit</button>
                   <button onClick={() => deleteArticle(art.article_id)}>Delete</button>
                 </div>
               </div>
