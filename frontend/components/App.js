@@ -29,9 +29,9 @@ export default function App() {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.clear('token');
     setMessage('Goodbye!');
-    redirectToLogin('/');
+    redirectToLogin();
   };
 
   const login = async ({ username, password }) => {
@@ -85,7 +85,7 @@ export default function App() {
       setMessage(data.message); // Assuming username is available in the response
   
     } catch (error) {
-      setMessage('An error occurred while fetching articles');
+      setMessage(data.message);
     } finally {
       setSpinnerOn(false); // Turn off spinner
     }
@@ -94,6 +94,7 @@ export default function App() {
   const postArticle = async (article) => {
     setMessage('');
     setSpinnerOn(true);
+  
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -112,32 +113,36 @@ export default function App() {
         body: JSON.stringify(article),
       });
   
-      if (response.ok) {
-        const newArticle = await response.json();
-  
-        // Update the articles state to include the newly created article
-        setArticles([...articles, newArticle]);
-  
-        setMessage('Article posted successfully!');
-        return newArticle; // Return the newly created article if needed
-      } else if (response.status === 401) {
-        redirectToLogin(); // Redirect to login if token is invalid
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'Failed to post article');
+      if (!response.ok) {
+        throw new Error('Failed to create article');
       }
+  
+      const responseData = await response.json(); // Parse response JSON
+  
+      // Assuming responseData.message contains the desired message
+      // and responseData.article contains the newly created article
+      setMessage(responseData.message);
+  
+      // Assuming setCurrentArticleId is used to manage the current article ID state
+      setArticles((prevArticles) => [...prevArticles, responseData.article]);
+      setCurrentArticleId(null); // Clear the current article ID after successful update
+  
+      console.log(responseData); // Log the entire response data if needed
     } catch (error) {
-      setMessage('An error occurred while posting the article');
+      console.error('Error creating article:', error);
+      setMessage('Error creating article'); // Set an error message for failed updates
     } finally {
-      setSpinnerOn(false); // Turn off spinner
+      setSpinnerOn(false);
     }
   };
+  
+  
   
   
 
   const updateArticle = async ({ article_id, article }) => {
     setMessage('');
-    setSpinnerOn(true); // Set spinner on while updating article
+    setSpinnerOn(true);
   
     try {
       const token = localStorage.getItem('token');
@@ -148,7 +153,6 @@ export default function App() {
   
       const updateUrl = `http://localhost:9000/api/articles/${article_id}`;
   
-      // Implement AJAX call to update article using Axios
       const response = await axios.put(updateUrl, article, {
         headers: {
           'Content-Type': 'application/json',
@@ -156,20 +160,30 @@ export default function App() {
         },
       });
   
-      const updatedArticle = response.data; // Assuming the response contains the updated article data
+      const updatedArticle = response.data.article; // Assuming the response contains the updated article data
+      const updateMessage = response.data.message;
   
-      // Update the state with the updated article
-      setCurrentArticleId(null); // Clear current article ID
-      setSuccessMessage('Article updated successfully'); // Display success message
-      setCurrentArticle(updatedArticle); // Set the updated article in the state
+      // Update the articles state with the updated article
+      setArticles((prevArticles) =>
+        prevArticles.map((art) =>
+          art.article_id === article_id ? { ...art, ...updatedArticle } : art
+        )
+      );
+  
+      setCurrentArticleId(null); // Clear the current article ID after successful update
+  
+      // Set the message state with the retrieved message string
+      setMessage(updateMessage);
+  
+      console.log(updatedArticle); // Log the updated article if needed
     } catch (error) {
       console.error('Error updating article:', error);
-      setMessage('An error occurred while updating the article');
+      setMessage('Error updating article'); // Set an error message for failed updates
     } finally {
-      setSpinnerOn(false); // Turn off spinner
+      setSpinnerOn(false);
     }
   };
-
+  
 
   
   const deleteArticle = async (article_id) => {
@@ -232,6 +246,7 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm
+              articles={articles}
               postArticle={postArticle}
               updateArticle={updateArticle}
               setCurrentArticleId={setCurrentArticleId}

@@ -24,9 +24,12 @@ export default function LoginForm({login}) {
   };
 
   const isDisabled = () => {
-    return !(username.trim().length >= 3 && password.trim().length >= 8);
-  };
-
+     if (username.trim().length >= 3 && password.trim().length >= 8) {
+      return false
+     } else {
+      return true 
+     }
+  } 
 
   return (
     <form id="loginForm" onSubmit={onSubmit}>

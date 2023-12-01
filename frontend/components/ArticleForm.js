@@ -8,23 +8,27 @@ export default function ArticleForm({
   updateArticle,
   setCurrentArticleId,
   currentArticle,
+  currentArticleId,
+  articles,
 }) {
   const [values, setValues] = useState(initialFormValues);
   const [successMessage, setSuccessMessage] = useState('');
-  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
     console.log("Current Article:", currentArticle);
-    if (currentArticle) {
-      setValues({
-        title: currentArticle.title || '',
-        text: currentArticle.text || '',
-        topic: currentArticle.topic || '',
-      });
+    if (currentArticleId) {
+      let currentArticle = articles.filter(art => art.article_id === currentArticleId )
+      console.log(currentArticle)
+      setValues(currentArticle[0])
+      // setValues({
+      //   title: currentArticle.title || '',
+      //   text: currentArticle.text || '',
+      //   topic: currentArticle.topic || '',
+      // });
     } else {
       setValues(initialFormValues);
     }
-  }, [currentArticle]);
+  }, [currentArticleId]);
 
   const onChange = (evt) => {
     const { id, value } = evt.target;
@@ -34,20 +38,21 @@ export default function ArticleForm({
   const onSubmit = async (evt) => {
     evt.preventDefault();
     try {
-      if (currentArticle) {
+      if (currentArticleId) {
         // Existing article - perform update
-        await updateArticle({ article_id: currentArticle.article_id, article: values });
+        await updateArticle({ article_id: currentArticleId, article: values });
         // Reset form after successful submission
-        setValues(initialFormValues);
+        //setValues(initialFormValues);
         // Clear currentArticle ID after submission
-        setCurrentArticleId(null);
+       // setCurrentArticleId();
         // Display success message
         setSuccessMessage('Article updated successfully');
+        setValues(initialFormValues);
       } else {
         // New article - perform creation
-        const newArticle = await postArticle(values);
+        await postArticle(values);
         // Update the articles state with the newly created article
-        setArticles([...articles, newArticle]);
+        //setArticles([...articles, newArticle]);
         // Reset form after successful submission
         setValues(initialFormValues);
         // Display success message
